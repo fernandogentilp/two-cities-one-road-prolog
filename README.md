@@ -11,5 +11,5 @@ jogador recebe recursos limitados e precisa lidar com geografias distintas.
 
 ## Execução
 
-1. Caso não possua, instale o `Cabal` (veja [neste link](https://www.haskell.org/cabal/))
-2. Na raiz do projeto, execute `cabal run`
+1. 
+2.
