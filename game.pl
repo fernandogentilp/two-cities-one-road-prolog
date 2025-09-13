@@ -3,6 +3,7 @@
 :- use_module(mapUtils).
 :- use_module(library(readutil)).
 :- use_module(map).
+:- use_module(interfaces).
 
 % exibicao do mapa
 printMap([]).
@@ -27,6 +28,8 @@ start :-
     InitialPos = (0,0),
     InitialBudget = 15,
     update_start_tile(Map, InitialPos, Map1),
+    homeScreen(Screen),
+    write(Screen), n1,
     gameLoop(Map1, InitialPos, InitialBudget).
 
 % marca o tile inicial como construido
@@ -59,23 +62,27 @@ validCoord(Map, (Lat, Long)) :-
 % derrota ao zerar orcamento
 gameLoop(Map, _, Budget) :-
     Budget =< 0,
-    nl, write('Fim de jogo! Seu orcamento acabou!'), nl,
-    write('Voce perdeu!'), nl,
-    nl, write('Mapa final:'), nl,
+    endScreen("Fim de jogo! Seu orçamento acabou!",
+              ["Você perdeu!", "Mapa final"]),
+              Screen),
+    write(Screen), nl,
     printMap(Map).
 
 % derrota ao nao ter vizinhos dentro do orcamento
 gameLoop(Map, Pos, Budget) :-
     \+ hasAffordableTile(Map, Pos, Budget),
-    nl, write('Voce nao tem orcamento suficiente para construir em nenhum painel adjacente!'), nl,
-    write('Voce perdeu!'), nl,
-    nl, write('Mapa final:'), nl,
+    endScreen("Sem orcamento suficiente!", 
+             ["Voce nao tem orcamento para construir em paineis adjacentes!", 
+              "Voce perdeu!", "Mapa final:"], 
+              Screen),
+    write(Screen), nl,
     printMap(Map).
 
 % continua
 gameLoop(Map, Pos, Budget) :-
-    nl, write('--- MAPA ATUAL ---'), nl,
-    printMap(Map),
+    gameScreen(Map, Budget, Screen),
+    write(Screen), nl,
+    
     format('Orcamento atual: ~w~n', [Budget]),
     nl, write('Use W/A/S/D para mover e construir ou "stop." para sair:'), nl,
     read(Input),
