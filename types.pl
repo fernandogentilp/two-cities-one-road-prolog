@@ -1,3 +1,8 @@
+% ==================================================
+% Módulo: types.pl
+% Propósito: TODO
+% ==================================================
+
 %preparando o modulo para ser importado, os /1 significam um predicado com um argumento
 :- module(types, [terrain/1, coord/1, tile/1, row/1, map/1]).
 

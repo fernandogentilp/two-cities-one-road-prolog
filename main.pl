@@ -1,3 +1,8 @@
+% ==================================================
+% Módulo: main.pl
+% Propósito: TODO
+% ==================================================
+
 :- use_module(types).
 :- use_module(mapUtils).
 :- use_module(map).
@@ -9,20 +14,18 @@ main :-
     nl, nl,
     homeScreen(Screen),
     write(Screen), nl,
-    write('Escolha uma opcao:'), nl,
-    write('1. Iniciar novo jogo'), nl,
-    write('2. Sair'), nl,
-    read(Option),
-    processMenuOption(Option).
 
-processMenuOption(1) :-
+    read_single_key(Key),
+    process_key(Key, UpperKey),
+    processMenuOption(UpperKey).
+
+processMenuOption('A') :-
     start.
 
-processMenuOption(2) :-
-    write('Ate logo!'), nl.
+processMenuOption('Q') :-
+    write('Programa encerrado.'), nl.
 
 processMenuOption(_) :-
-    write('Opcao invalida!'), nl,
     main.
 
 :- initialization(main, main).

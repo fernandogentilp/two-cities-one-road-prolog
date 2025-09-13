@@ -1,3 +1,8 @@
+% ==================================================
+% Módulo: map.pl
+% Propósito: TODO
+% ==================================================
+
 :- module(map, [buildMap/3]).
 :- use_module(types).
 :- use_module(library(random)).

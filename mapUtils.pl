@@ -1,3 +1,8 @@
+% ==================================================
+% Módulo: mapUtils.pl
+% Propósito: TODO
+% ==================================================
+
 :- module(mapUtils, [getElement/3, verifyCoord/2, findNeighbors/2]).
 :- use_module(types).
 

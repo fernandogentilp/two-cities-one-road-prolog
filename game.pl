@@ -1,3 +1,8 @@
+% ==================================================
+% Módulo: game.pl
+% Propósito: TODO
+% ==================================================
+
 % modulos e biblioteca importados
 :- use_module(types).
 :- use_module(mapUtils).
@@ -17,10 +22,11 @@ printRow([tile(Terrain,_,_,_,Built)|Rest]) :-
     printRow(Rest).
 
 % predicados de offset para definir a nova coordenada apos jogador indicar a direcao que quer ir
-move_offset(w, (-1, 0)).
-move_offset(s, (1, 0)).
-move_offset(a, (0, -1)).
-move_offset(d, (0, 1)).
+move_offset('W', (-1, 0)).
+move_offset('S', (1, 0)).
+move_offset('A', (0, -1)).
+move_offset('D', (0, 1)).
+move_offset('Q', stop).
 
 % inicia o jogo com valores iniciais e um mapa aleatorio, assim como o orcamento do jogador
 start :-
@@ -84,17 +90,17 @@ gameLoop(Map, Pos, Budget) :-
     write(Screen), nl,
     
     format('Orcamento atual: ~w~n', [Budget]),
-    nl, write('Use W/A/S/D para mover e construir ou "stop." para sair:'), nl,
-    read(Input),
+    read_single_key(Input),
     processInput(Input, Map, Pos, Budget).
 
 % processamento da entrada do jogador
-processInput(stop, MapIn, _Pos, Budget) :-
+processInput('Q', MapIn, _Pos, Budget) :-
     nl, write('Jogo interrompido! Mapa final:'), nl,
     printMap(MapIn),
     format('Orcamento final: ~w~n', [Budget]).
 
 processInput(Input, MapIn, (Lat, Long), Budget) :-
+    process_key(Input, UpperInput),
     move_offset(Input, (DL, DC)),
     NewLat is Lat + DL,
     NewLong is Long + DC,

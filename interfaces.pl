@@ -1,4 +1,9 @@
-:- module(interfaces, [homeScreen/1, gameScreen/3, endScreen/3]).
+% ==================================================
+% Módulo: interfaces.pl
+% Propósito: TODO
+% ==================================================
+
+:- module(interfaces, [homeScreen/1, gameScreen/3, endScreen/3, read_single_key/1, process_key/2]).
 :- use_module(library(lists)).
 
 % Tela inicial
@@ -188,3 +193,12 @@ terrainToChar(forest, false, 'f').
 terrainToChar(forest, true, 'F').
 terrainToChar(city, false, 'c').
 terrainToChar(city, true, 'C').
+
+% Leitura de tecla única sem necessidade de ponto
+read_single_key(Key) :-
+    get_single_char(CharCode),
+    char_code(Key, CharCode).
+
+% Processar tecla em maiúscula
+process_key(Key, UpperKey) :-
+    upcase_atom(Key, UpperKey).
