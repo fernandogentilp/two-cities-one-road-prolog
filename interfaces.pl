@@ -1,10 +1,14 @@
 % ==================================================
 % Módulo: interfaces.pl
-% Propósito: TODO
+% Propósito: interface do usuário e telas
 % ==================================================
 
 :- module(interfaces, [homeScreen/1, gameScreen/3, endScreen/3, read_single_key/1, process_key/2]).
+
 :- use_module(library(lists)).
+:- use_module(mapUtils).
+:- use_module(types).
+:- use_module(library(readutil)).
 
 % Tela inicial
 homeScreen(Screen) :-
@@ -14,26 +18,26 @@ homeScreen(Screen) :-
     Lines = [
         'Bem vindo ao jogo!',
         '',
-        'Seu objetivo e conectar duas cidades com dinheiro',
-        'limitado e diversos obstaculos naturais.',
+        'Seu objetivo é conectar duas cidades com dinheiro',
+        'limitado e diversos obstáculos naturais.',
         '',
         'Durante o jogo, use as teclas de direcao (w, a, s, d)',
         'para construir trilhos nos quadrantes vizinhos ao seu.'
     ],
     topJustifyColumn(Lines, MiddleLines),
     
-    Footer = 'A: acessar ultimo mapa | G: gerar mapa | Q: sair',
+    Footer = 'G: gerar e jogar novo mapa | Q: sair',
     middleJustifyLine(Footer, BottomLine),
     
     baseScreen(TopLine, MiddleLines, BottomLine, Screen).
 
 % Tela de jogo
 gameScreen(Map, Budget, Screen) :-
-    format(atom(CashStr), 'Dinheiro restante: ~w', [Budget]),
-    format(atom(PosStr), 'Posicao do jogador: (0,0)'),
-    
-    atom_concat(CashStr, ' | ', Temp),
-    atom_concat(Temp, PosStr, TopText),
+    string_concat('Dinheiro restante: ', Budget, CashStr),
+    string_concat('Posição do jogador: ', '(0,0)', PosStr),
+
+    string_concat(CashStr, ' | ', Temp),
+    string_concat(Temp, PosStr, TopText),
     middleJustifyLine(TopText, TopLine),
     
     % Converter mapa para representação visual simples
@@ -194,11 +198,15 @@ terrainToChar(forest, true, 'F').
 terrainToChar(city, false, 'c').
 terrainToChar(city, true, 'C').
 
-% Leitura de tecla única sem necessidade de ponto
 read_single_key(Key) :-
-    get_single_char(CharCode),
-    char_code(Key, CharCode).
+    get_single_char(Code),
+    char_code(Key, Code).
 
 % Processar tecla em maiúscula
 process_key(Key, UpperKey) :-
-    upcase_atom(Key, UpperKey).
+    char_code(Key, Code),
+    (   Code >= 97, Code =< 122  % Letras minúsculas a-z
+    ->  UpperCode is Code - 32,   % Converte para maiúscula
+        char_code(UpperKey, UpperCode)
+    ;   UpperKey = Key
+    ).

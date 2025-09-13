@@ -1,7 +1,9 @@
 % ==================================================
 % Módulo: main.pl
-% Propósito: TODO
+% Propósito: ponto de entrada principal do jogo
 % ==================================================
+
+:- module(main, [main/0]).
 
 :- use_module(types).
 :- use_module(mapUtils).
@@ -19,11 +21,12 @@ main :-
     process_key(Key, UpperKey),
     processMenuOption(UpperKey).
 
-processMenuOption('A') :-
-    start.
+processMenuOption('G') :-
+    start,
+    main.
 
 processMenuOption('Q') :-
-    write('Programa encerrado.'), nl.
+    halt.
 
 processMenuOption(_) :-
     main.

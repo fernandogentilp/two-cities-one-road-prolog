@@ -1,7 +1,9 @@
 % ==================================================
 % Módulo: game.pl
-% Propósito: TODO
+% Propósito: lógica principal do jogo
 % ==================================================
+
+:- module(game, [start/0, gameLoop/3]).
 
 % modulos e biblioteca importados
 :- use_module(types).
@@ -9,6 +11,7 @@
 :- use_module(library(readutil)).
 :- use_module(map).
 :- use_module(interfaces).
+:- use_module(map, [randomize/0]).
 
 % exibicao do mapa
 printMap([]).
@@ -30,12 +33,11 @@ move_offset('Q', stop).
 
 % inicia o jogo com valores iniciais e um mapa aleatorio, assim como o orcamento do jogador
 start :-
+    randomize,
     buildMap(5, 5, Map),
     InitialPos = (0,0),
     InitialBudget = 15,
     update_start_tile(Map, InitialPos, Map1),
-    homeScreen(Screen),
-    write(Screen), n1,
     gameLoop(Map1, InitialPos, InitialBudget).
 
 % marca o tile inicial como construido
@@ -69,7 +71,7 @@ validCoord(Map, (Lat, Long)) :-
 gameLoop(Map, _, Budget) :-
     Budget =< 0,
     endScreen("Fim de jogo! Seu orçamento acabou!",
-              ["Você perdeu!", "Mapa final"]),
+              ["Você perdeu!", "Mapa final"],
               Screen),
     write(Screen), nl,
     printMap(Map).
@@ -89,45 +91,46 @@ gameLoop(Map, Pos, Budget) :-
     gameScreen(Map, Budget, Screen),
     write(Screen), nl,
     
-    format('Orcamento atual: ~w~n', [Budget]),
     read_single_key(Input),
     processInput(Input, Map, Pos, Budget).
 
 % processamento da entrada do jogador
-processInput('Q', MapIn, _Pos, Budget) :-
+processInput('q', MapIn, _Pos, _Budget) :-
     nl, write('Jogo interrompido! Mapa final:'), nl,
-    printMap(MapIn),
-    format('Orcamento final: ~w~n', [Budget]).
+    printMap(MapIn).
 
-processInput(Input, MapIn, (Lat, Long), Budget) :-
+processInput(Input, MapIn, Pos, Budget) :-
     process_key(Input, UpperInput),
-    move_offset(Input, (DL, DC)),
+    member(UpperInput, ['W','A','S','D','Q']),
+    move_offset(UpperInput, Offset),
+    (   Offset = stop ->
+        nl, write('Jogo interrompido! Mapa final:'), nl,
+        printMap(MapIn)
+    ;   process_movement(Offset, MapIn, Pos, Budget)
+    ).
+
+processInput(_, MapIn, Pos, Budget) :-
+    write('Comando invalido! Use W/A/S/D ou "stop", sempre com um "."'), nl,
+    gameLoop(MapIn, Pos, Budget).
+
+process_movement((DL, DC), MapIn, (Lat, Long), Budget) :-
     NewLat is Lat + DL,
     NewLong is Long + DC,
     NewPos = (NewLat, NewLong),
     (   verifyCoord(NewPos, MapIn) ->
         getElement(NewPos, MapIn, tile(_, NewPos, _, BuildCost, Built)),
-
         (   Built = true ->
-            write('Esse painel ja esta construido! Tente outro.'), nl,
+            write('Esse painel já está construido! Tente outro.'), nl,
             gameLoop(MapIn, (Lat, Long), Budget)
-
         ;   BuildCost =< Budget ->
             getElement(NewPos, MapIn, tile(T, NewPos, PC, BC, _)),
             NewTile = tile(T, NewPos, PC, BC, true),
             update_tile(MapIn, NewPos, NewTile, MapOut),
             NewBudget is Budget - BuildCost,
             gameLoop(MapOut, NewPos, NewBudget)
-
-        ;
-            write('Orcamento insuficiente para construir nesse painel!'), nl,
+        ;   write('Orçamento insuficiente para construir nesse painel!'), nl,
             gameLoop(MapIn, (Lat, Long), Budget)
         )
-    ;
-        write('Movimento invalido! Tente novamente.'), nl,
+    ;   write('Movimento invalido! Tente novamente.'), nl,
         gameLoop(MapIn, (Lat, Long), Budget)
     ).
-
-processInput(_, MapIn, (Lat, Long), Budget) :-
-    write('Comando invalido! Use W/A/S/D ou "stop", sempre com um "."'), nl,
-    gameLoop(MapIn, (Lat, Long), Budget).

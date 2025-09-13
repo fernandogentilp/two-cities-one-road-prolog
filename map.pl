@@ -1,11 +1,25 @@
 % ==================================================
 % Módulo: map.pl
-% Propósito: TODO
+% Propósito: geração de mapas
 % ==================================================
 
-:- module(map, [buildMap/3]).
+:- module(map, [buildMap/3, randomize/0]).
+
 :- use_module(types).
 :- use_module(library(random)).
+
+% Definir o predicado dinâmico dentro do módulo
+:- dynamic random_initialized/0.
+
+randomize :-
+    (   random_initialized -> true
+    ;   % Correção: usar a abordagem correta para SWI-Prolog
+        % Gera uma semente aleatória baseada no tempo atual
+        get_time(Time),
+        TimeInt is round(Time),
+        set_random(seed(TimeInt)),  % Método correto para SWI-Prolog
+        asserta(random_initialized)
+    ).
 
 % predicados que unificam um tipo de terreno ao seu custo de travessia
 passing(plains, 1).

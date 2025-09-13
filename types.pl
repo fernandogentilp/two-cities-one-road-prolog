@@ -1,6 +1,6 @@
 % ==================================================
 % Módulo: types.pl
-% Propósito: TODO
+% Propósito: definição de tipos
 % ==================================================
 
 %preparando o modulo para ser importado, os /1 significam um predicado com um argumento

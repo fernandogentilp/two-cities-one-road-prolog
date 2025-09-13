@@ -1,9 +1,10 @@
 % ==================================================
 % Módulo: mapUtils.pl
-% Propósito: TODO
+% Propósito: utilitários para manipulação de mapas
 % ==================================================
 
 :- module(mapUtils, [getElement/3, verifyCoord/2, findNeighbors/2]).
+
 :- use_module(types).
 
 %nth0(Index, List, Elem) unifica a linha ou o painel do index passado como parametro junto da lista, começando de 0
