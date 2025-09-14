@@ -40,7 +40,7 @@ gameScreen(Map, Budget, Screen) :-
     string_concat(Temp, PosStr, TopText),
     middleJustifyLine(TopText, TopLine),
     
-    % Converter mapa para representação visual simples
+    % Converter mapa para representação visual ampliada
     mapToMatrix(Map, Matrix),
     middleJustifyColumn(Matrix, MiddleLines),
     
@@ -173,20 +173,47 @@ middleWithEdges([Line|Lines], [ResultLine|Rest]) :-
     atom_concat(Temp, '│', ResultLine),
     middleWithEdges(Lines, Rest).
 
-% Converter mapa para matriz visual simples
-mapToMatrix([], []).
-mapToMatrix([Row|Rows], MatrixRows) :-
-    rowToLine(Row, Line),
-    MatrixRows = [Line|RestLines],
-    mapToMatrix(Rows, RestLines).
+% ============================================================
+% Conversão do mapa em matriz visual AMPLIADA
+% ============================================================
 
-rowToLine([], '').
-rowToLine([tile(Terrain,_,_,_,Built)|Rest], Result) :-
+mapToMatrix(Map, MatrixRows) :-
+    ScaleX = 2,   % Largura de cada tile
+    ScaleY = 2,   % Altura de cada tile
+    expandMatrix(Map, ScaleX, ScaleY, MatrixRows).
+
+% Expande a matriz original em grid maior
+expandMatrix([], _, _, []).
+expandMatrix([Row|Rows], ScaleX, ScaleY, Expanded) :-
+    expandRow(Row, ScaleX, ExpandedRow),
+    duplicateLines(ExpandedRow, ScaleY, ExpandedRowScaled),
+    expandMatrix(Rows, ScaleX, ScaleY, ExpandedRows),
+    append(ExpandedRowScaled, ExpandedRows, Expanded).
+
+% Expande uma linha (horizontal)
+expandRow([], _, []).
+expandRow([tile(Terrain,_,_,_,Built)|Rest], ScaleX, [Expanded|ExpandedRest]) :-
     terrainToChar(Terrain, Built, Char),
-    rowToLine(Rest, RestLine),
-    atom_concat(Char, RestLine, Result).
+    expandChar(Char, ScaleX, Expanded),
+    expandRow(Rest, ScaleX, ExpandedRest).
 
-% Converter terreno para caractere visual
+% Repete o caractere N vezes (horizontal)
+expandChar(Char, ScaleX, Expanded) :-
+    atom_chars(Char, [C]),
+    findall(C, between(1, ScaleX, _), List),
+    atom_chars(Expanded, List).
+
+% Repete uma linha N vezes (vertical)
+duplicateLines(_, 0, []) :- !.
+duplicateLines(LineList, N, [Line|Rest]) :-
+    atomic_list_concat(LineList, '', Line),
+    N1 is N - 1,
+    duplicateLines(LineList, N1, Rest).
+
+% ============================================================
+% Mapeamento de terrenos -> caracteres
+% ============================================================
+
 terrainToChar(plains, false, 'p').
 terrainToChar(plains, true, 'P').
 terrainToChar(mountains, false, 'm').
@@ -197,6 +224,10 @@ terrainToChar(forest, false, 'f').
 terrainToChar(forest, true, 'F').
 terrainToChar(city, false, 'c').
 terrainToChar(city, true, 'C').
+
+% ============================================================
+% Entrada de teclas
+% ============================================================
 
 read_single_key(Key) :-
     get_single_char(Code),
@@ -210,3 +241,4 @@ process_key(Key, UpperKey) :-
         char_code(UpperKey, UpperCode)
     ;   UpperKey = Key
     ).
+

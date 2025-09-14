@@ -1,5 +1,16 @@
 % filepath: persistence.pl
 
+:- module(persistence, [
+    default_matrix/1, default_cash/1, default_coord/1,
+    file_matrix/1, file_cash/1, file_coord/1,
+    verify_and_create_files/0,
+    write_string/2, write_int/2,
+    read_string/2, read_int/2
+]).
+
+make_directory_path(Dir) :-
+    (   exists_directory(Dir) -> true ; make_directory(Dir) ).
+
 % --- Valores padrão ---
 default_matrix("CPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPc").
 default_cash("100").

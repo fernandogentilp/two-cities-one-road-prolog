@@ -7,6 +7,7 @@
 
 % modulos e biblioteca importados
 :- use_module(types).
+:- use_module(persistence).
 :- use_module(mapUtils).
 :- use_module(library(readutil)).
 :- use_module(map).
@@ -31,13 +32,21 @@ move_offset('A', (0, -1)).
 move_offset('D', (0, 1)).
 move_offset('Q', stop).
 
-% inicia o jogo com valores iniciais e um mapa aleatorio, assim como o orcamento do jogador
+% inicia o jogo com valores iniciais, salva estado inicial e entra no loop
 start :-
+    verify_and_create_files,  % garante arquivos criados se não existirem
     randomize,
     buildMap(5, 5, Map),
     InitialPos = (0,0),
     InitialBudget = 15,
     update_start_tile(Map, InitialPos, Map1),
+
+    % grava estado inicial nos arquivos de persistência
+    file_matrix(MatrixFile), write_string(MatrixFile, Map1),
+    file_cash(CashFile), write_int(CashFile, InitialBudget),
+    file_coord(CoordFile), write_string(CoordFile, "0 0"),
+
+    % inicia loop do jogo
     gameLoop(Map1, InitialPos, InitialBudget).
 
 % marca o tile inicial como construido
