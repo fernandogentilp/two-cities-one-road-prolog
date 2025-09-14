@@ -3,7 +3,7 @@
 :- use_module(mapUtils).
 :- use_module(library(readutil)).
 :- use_module(map).
-:- use_module(graph)
+:- use_module(graph).
 
 % exibicao do mapa
 printMap([]).
@@ -208,4 +208,5 @@ test_evaluation :-
     End = (2,1),
 
     % Chama a função para avaliar o caminho
+
     evaluatePathModified(PlayerPath, Map, Start, End).
