@@ -1,34 +1,27 @@
-% --------------------------------------
-% Tipos e utilitários do mapa
-% --------------------------------------
+:- module(graph, [bellmanFord/4]).
 
-% tile(Location, Type)
-% location = (X,Y)
-% Type = grass, water, mountain, etc.
-% Exemplo: tile((0,0), grass).
+%-------------------------------------
+% Funções utilitárias
+%-------------------------------------
 
-% getElement(+Coord, +Map, -Tile)
-getElement(Coord, Map, Tile) :- member(Tile, Map), Tile = tile(Coord,_).
+getNode(Coord, Map, Tile) :- member(Tile, Map), Tile = tile(Coord,_).
 
-% passingCost(+Tile, -Cost)
-passingCost(tile(_, Type), Cost) :-
+edgeCost(tile(_, Type), Cost) :-
     ( Type = grass -> Cost = 1
     ; Type = water -> Cost = 2
     ; Type = mountain -> Cost = 5
     ; Cost = 1
     ).
 
-% verifyCoord(+Coord, +Map)
-verifyCoord((X,Y), Map) :-
+graphLoc((X,Y), Map) :-
     member(tile((X,Y),_), Map).
 
-% findNeighbors(+Coord, +Map, -Neighbors)
-findNeighbors((X,Y), Map, Neighbors) :-
+graphNeighbors((X,Y), Map, Neighbors) :-
     DX = [0,1,0,-1], DY = [1,0,-1,0],
     findall((NX,NY),
         (nth0(I, DX, DXI), nth0(I, DY, DYI),
          NX is X + DXI, NY is Y + DYI,
-         verifyCoord((NX,NY), Map)),
+         graphLoc((NX,NY), Map)),
     Neighbors).
 
 % --------------------------------------
@@ -40,10 +33,10 @@ buildGraph(Map, Graph) :-
     findall((Coord1,Coord2,Cost),
         (member(Tile, Map),
          Tile = tile(Coord1,_),
-         findNeighbors(Coord1, Map, Neighbors),
+         graphNeighbors(Coord1, Map, Neighbors),
          member(Coord2, Neighbors),
-         getElement(Coord2, Map, Tile2),
-         passingCost(Tile2, Cost)
+         getNode(Coord2, Map, Tile2),
+         edgeCost(Tile2, Cost)
         ),
     Graph).
 
