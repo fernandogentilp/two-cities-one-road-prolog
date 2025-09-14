@@ -3,6 +3,7 @@
 :- use_module(mapUtils).
 :- use_module(library(readutil)).
 :- use_module(map).
+:- use_module(graph)
 
 % exibicao do mapa
 printMap([]).
@@ -118,3 +119,93 @@ processInput(Input, MapIn, (Lat, Long), Budget) :-
 processInput(_, MapIn, (Lat, Long), Budget) :-
     write('Comando invalido! Use W/A/S/D ou "stop", sempre com um "."'), nl,
     gameLoop(MapIn, (Lat, Long), Budget).
+
+% evaluatePath(+PlayerPath, +Map, +Start, +End)
+% PlayerPath: Lista de coordenadas do caminho percorrido pelo jogador.
+% Map: O mapa atual do jogo.
+% Start: A coordenada inicial do jogador.
+% End: A coordenada de destino (usada para buscar no resultado do Bellman-Ford).
+evaluatePath(PlayerPath, Map, Start, End) :-
+    nl, write('--- Análise do Caminho ---'), nl,
+
+    % Calcula o custo do caminho do jogador
+    calculatePlayerPathCost(PlayerPath, Map, PlayerCost),
+
+    % Obtém os nós e constrói o grafo
+    listNodes(Map, Nodes),
+    buildGraph(Map, Graph),
+
+    % Executa Bellman-Ford para encontrar o caminho ideal
+    bellmanFord(Nodes, Graph, Start, BellmanFordResult),
+
+    % Processa o resultado do Bellman-Ford
+    processBellmanFordResult(BellmanFordResult, PlayerCost, End),
+
+    nl, write('--------------------------'), nl.
+
+% --- Predicados Auxiliares para evaluatePath ---
+
+% calculatePlayerPathCost(+Path, +Map, -TotalCost)
+% Calcula o custo total de passar pelos tiles no caminho do jogador.
+calculatePlayerPathCost([], _, 0).
+calculatePlayerPathCost([Coord|Rest], Map, TotalCost) :-
+    getElement(Coord, Map, Tile),
+    passingCost(Tile, Cost),
+    calculatePlayerPathCost(Rest, Map, RestCost),
+    TotalCost is Cost + RestCost.
+
+
+
+% Modificação em evaluatePath para passar Start e PlayerPath
+evaluatePathModified(PlayerPath, Map, Start, End) :-
+    nl, write('--- Análise do Caminho ---'), nl,
+
+    calculatePlayerPathCost(PlayerPath, Map, PlayerCost),
+
+    listNodes(Map, Nodes),
+    buildGraph(Map, Graph),
+
+    bellmanFord(Nodes, Graph, Start, BellmanFordResult),
+
+    processBellmanFordResultModified(Start, PlayerPath, BellmanFordResult, PlayerCost, End), % Passando Start e PlayerPath
+
+    nl, write('--------------------------'), nl.
+
+% Modificação em processBellmanFordResult para receber Start e PlayerPath
+processBellmanFordResultModified(_Start, _PlayerPath, left(ErrorMsg), _PlayerCost, _End) :-
+    format('Erro ao calcular caminho ideal: ~w~n', [ErrorMsg]).
+processBellmanFordResultModified(Start, PlayerPath, right(Distances, Preds), PlayerCost, End) :-
+    (   member(End-OptimalCost, Distances) ->
+        buildPath(Start, End, Preds, BestPath),
+        format('Seu caminho passou por: ~w~n', [PlayerPath]),
+        format('Seus custos: ~w~n', [PlayerCost]),
+        format('Caminho ideal (Bellman-Ford): ~w~n', [BestPath]),
+        format('Custo ideal (Bellman-Ford): ~w~n', [OptimalCost]),
+
+        Diff is PlayerCost - OptimalCost,
+        (   Diff == 0 ->
+            writeln('Trabalho perfeito! Você fez a ferrovia mais rápida possível!')
+        ;   Diff > 0 ->
+            format('Viajar custou ~w a mais que o melhor trajeto possível.~n', [Diff])
+        ;
+            format('Seu custo foi ~w a menos que o ideal (verifique a lógica).~n', [Diff])
+        )
+    ;
+        writeln('Destino inalcançável pelo Bellman-Ford.'),
+        format('Seus custos: ~w~n', [PlayerCost])
+    ).
+
+    % Predicado de teste para evaluatePathModified
+test_evaluation :-
+    % Pega o mapa de exemplo do modulo graph
+    graph:example_map(Map),
+
+    % Define o caminho do jogador. Por exemplo, de (0,0) para (2,1)
+    PlayerPath = [(0,0), (1,0), (2,0), (2,1)],
+
+    % Define o ponto de partida e chegada
+    Start = (0,0),
+    End = (2,1),
+
+    % Chama a função para avaliar o caminho
+    evaluatePathModified(PlayerPath, Map, Start, End).
