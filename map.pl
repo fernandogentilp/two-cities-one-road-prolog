@@ -36,7 +36,7 @@ building(forest, 3).
 building(city, 1).
 
 % lista de possiveis terrenos
-terrains([plains, mountains, lake, forest, city]).
+terrains([plains, mountains, lake, forest]).
 
 % gera um terreno aleatorio
 random_terrain(Terrain) :-
@@ -109,6 +109,3 @@ buildMap(Rows, Cols, FinalMap, StartPos) :-
 
     map(FinalMap),
     StartPos = (Row1, 0).
-
-
-
