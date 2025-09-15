@@ -3,22 +3,31 @@
 % Propósito: lógica principal do jogo
 % ==================================================
 
-:- module(game, [start/0, gameLoop/3]).
+:- module(game, [start/0, gameLoop/4]).
 
 % modulos e biblioteca importados
 :- use_module(types).
 :- use_module(mapUtils).
 :- use_module(library(readutil)).
 :- use_module(map).
-:- use_module(interfaces).
+:- use_module(interfaces, [mapToMatrix/2, gameScreen/3, read_single_key/1, process_key/2, endScreen/3]).
 :- use_module(map, [randomize/0]).
 :- use_module(graph).
 
 % exibicao do mapa
-printMap([]).
-printMap([Row|Rows]) :-
-    printRow(Row), nl,
-    printMap(Rows).
+printMap(Map) :-
+    mapToMatrix(Map, Matrix),
+    printMatrix(Matrix).
+
+printMatrix([]).
+printMatrix([Row|Rows]) :-
+    printMatrixRow(Row), nl,
+    printMatrix(Rows).
+
+printMatrixRow([]).
+printMatrixRow([Char|Rest]) :-
+    write(Char),
+    printMatrixRow(Rest).
 
 printRow([]).
 printRow([tile(Terrain,_,_,_,Built)|Rest]) :-
@@ -69,7 +78,7 @@ validCoord(Map, (Lat, Long)) :-
 
 % loop do jogo
 % derrota ao zerar orcamento
-gameLoop(Map, _, Budget) :-
+gameLoop(Map, _, Budget, _) :-
     Budget =< 0,
     endScreen("Fim de jogo! Seu orçamento acabou!",
               ["Você perdeu!", "Mapa final"],
@@ -78,7 +87,7 @@ gameLoop(Map, _, Budget) :-
     printMap(Map).
 
 % derrota ao nao ter vizinhos dentro do orcamento
-gameLoop(Map, Pos, Budget) :-
+gameLoop(Map, Pos, Budget, _) :-
     \+ hasAffordableTile(Map, Pos, Budget),
     endScreen("Sem orcamento suficiente!", 
              ["Voce nao tem orcamento para construir em paineis adjacentes!", 
@@ -88,12 +97,12 @@ gameLoop(Map, Pos, Budget) :-
     printMap(Map).
 
 % continua
-gameLoop(Map, Pos, Budget) :-
+gameLoop(Map, Pos, Budget, Path) :-
     gameScreen(Map, Budget, Screen),
     write(Screen), nl,
     
     read_single_key(Input),
-    processInput(Input, Map, Pos, Budget).
+    processInput(Input, Map, Pos, Budget, Path).
 
 % Lógica de vitória
 gameLoop(Map, Pos, Budget, Path) :-
@@ -103,25 +112,25 @@ gameLoop(Map, Pos, Budget, Path) :-
     !.
 
 % processamento da entrada do jogador
-processInput('q', MapIn, _Pos, _Budget) :-
+processInput('q', MapIn, _Pos, _Budget, _Path) :-
     nl, write('Jogo interrompido! Mapa final:'), nl,
     printMap(MapIn).
 
-processInput(Input, MapIn, Pos, Budget) :-
+processInput(Input, MapIn, Pos, Budget, Path) :-
     process_key(Input, UpperInput),
     member(UpperInput, ['W','A','S','D','Q']),
     move_offset(UpperInput, Offset),
     (   Offset = stop ->
         nl, write('Jogo interrompido! Mapa final:'), nl,
         printMap(MapIn)
-    ;   process_movement(Offset, MapIn, Pos, Budget)
+    ;   process_movement(Offset, MapIn, Pos, Budget, Path)
     ).
 
-processInput(_, MapIn, Pos, Budget) :-
-    write('Comando invalido! Use W/A/S/D ou "stop", sempre com um "."'), nl,
-    gameLoop(MapIn, Pos, Budget).
+processInput(_, MapIn, Pos, Budget, Path) :-
+    write('Comando invalido! Use W/A/S/D/Q'), nl,
+    gameLoop(MapIn, Pos, Budget, Path).
 
-process_movement((DL, DC), MapIn, (Lat, Long), Budget) :-
+process_movement((DL, DC), MapIn, (Lat, Long), Budget, Path) :-
     NewLat is Lat + DL,
     NewLong is Long + DC,
     NewPos = (NewLat, NewLong),
@@ -129,18 +138,19 @@ process_movement((DL, DC), MapIn, (Lat, Long), Budget) :-
         getElement(NewPos, MapIn, tile(_, NewPos, _, BuildCost, Built)),
         (   Built = true ->
             write('Esse painel já está construido! Tente outro.'), nl,
-            gameLoop(MapIn, (Lat, Long), Budget)
+            gameLoop(MapIn, (Lat, Long), Budget, Path)
         ;   BuildCost =< Budget ->
             getElement(NewPos, MapIn, tile(T, NewPos, PC, BC, _)),
             NewTile = tile(T, NewPos, PC, BC, true),
             update_tile(MapIn, NewPos, NewTile, MapOut),
             NewBudget is Budget - BuildCost,
-            gameLoop(MapOut, NewPos, NewBudget)
+            append(Path, [NewPos], NewPath), 
+            gameLoop(MapOut, NewPos, NewBudget, NewPath)
         ;   write('Orçamento insuficiente para construir nesse painel!'), nl,
-            gameLoop(MapIn, (Lat, Long), Budget)
+            gameLoop(MapIn, (Lat, Long), Budget, Path)
         )
     ;   write('Movimento invalido! Tente novamente.'), nl,
-        gameLoop(MapIn, (Lat, Long), Budget)
+        gameLoop(MapIn, (Lat, Long), Budget, Path)
     ).
 
 % Processamento de movimento com histórico
@@ -158,7 +168,7 @@ process_movement((DL, DC), MapIn, (Lat, Long), Budget, Path) :-
             NewTile = tile(T, NewPos, PC, BC, true),
             update_tile(MapIn, NewPos, NewTile, MapOut),
             NewBudget is Budget - BuildCost,
-            append(Path, [NewPos], NewPath),  % ADICIONAR: atualizar caminho
+            append(Path, [NewPos], NewPath), 
             gameLoop(MapOut, NewPos, NewBudget, NewPath)
         ;   write('Orçamento insuficiente para construir nesse painel!'), nl,
             gameLoop(MapIn, (Lat, Long), Budget, Path)

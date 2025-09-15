@@ -3,7 +3,14 @@
 % Propósito: interface do usuário e telas
 % ==================================================
 
-:- module(interfaces, [homeScreen/1, gameScreen/3, endScreen/3, read_single_key/1, process_key/2]).
+:- module(interfaces, [
+	homeScreen/1,
+	gameScreen/3,
+	endScreen/3,
+	read_single_key/1,
+	process_key/2,
+	mapToMatrix/2
+        ]).
 
 :- use_module(library(lists)).
 :- use_module(mapUtils).
@@ -178,8 +185,8 @@ middleWithEdges([Line|Lines], [ResultLine|Rest]) :-
 % ============================================================
 
 mapToMatrix(Map, MatrixRows) :-
-    ScaleX = 2,   % Largura de cada tile
-    ScaleY = 2,   % Altura de cada tile
+    ScaleX = 5,   % Largura de cada tile
+    ScaleY = 3,   % Altura de cada tile
     expandMatrix(Map, ScaleX, ScaleY, MatrixRows).
 
 % Expande a matriz original em grid maior
