@@ -73,3 +73,44 @@ random_map(StartLat, Rows, Cols, [Row | Rest]) :-
 buildMap(Rows, Cols, Map) :-
     random_map(0, Rows, Cols, Map),
     map(Map).
+
+% altera um painel (usado para adicionar as cidades)
+updateTileInRow([_ | Rest], 0, NewTile, [NewTile | Rest]) :- !.
+updateTileInRow([H | T], Index, NewTile, [H | NewRest]) :-
+    Index > 0,
+    I1 is Index - 1,
+    updateTileInRow(T, I1, NewTile, NewRest).
+
+% altera uma linha (adicionar as cidades)
+updateRowInMap([_ | Rest], 0, NewRow, [NewRow | Rest]) :- !.
+updateRowInMap([H | T], Index, NewRow, [H | NewRest]) :-
+    Index > 0,
+    I1 is Index - 1,
+    updateRowInMap(T, I1, NewRow, NewRest).
+
+% adicionar cidades
+forceCityTile(Lat, Long, tile(city, (Lat, Long), 1, 1, false)).
+
+% constroi um mapa com base nas dimensoes recebidas, e verifica se e valido
+buildMap(Rows, Cols, FinalMap, StartPos) :-
+    randomMap(0, Rows, Cols, Map),
+
+    MaxRowIndex is Rows - 1,
+    random_between(0, MaxRowIndex, Row1),
+    repeat,
+        random_between(0, MaxRowIndex, Row2),
+        Row2 \= Row1, !,
+
+    forceCityTile(Row1, 0, City1),
+    nth0(Row1, Map, OriginalRow1),
+    updateTileInRow(OriginalRow1, 0, City1, UpdatedRow1),
+    updateRowInMap(Map, Row1, UpdatedRow1, TempMap),
+
+    RightColIndex is Cols - 1,
+    forceCityTile(Row2, RightColIndex, City2),
+    nth0(Row2, TempMap, OriginalRow2),
+    updateTileInRow(OriginalRow2, RightColIndex, City2, UpdatedRow2),
+    updateRowInMap(TempMap, Row2, UpdatedRow2, FinalMap),
+
+    map(FinalMap),
+    StartPos = (Row1, 0).
