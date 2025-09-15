@@ -13,8 +13,16 @@ printMap([Row|Rows]) :-
 
 printRow([]).
 printRow([tile(Terrain,_,_,_,Built)|Rest]) :-
-    format('~w(~w) ', [Terrain, Built]),
+    terrainSymbol(Terrain, Built, X),
+    format('~w ', [X]),
     printRow(Rest).
+
+terrainSymbol(city, _, 'C').
+terrainSymbol(_, true,  '=').
+terrainSymbol(plains, _, '...').
+terrainSymbol(forest, _, 'fff').
+terrainSymbol(mountains, _, '^^').
+terrainSymbol(lake, false, '~~~').
 
 % predicados de offset para definir a nova coordenada apos jogador indicar a direcao que quer ir
 move_offset(w, (-1, 0)).
