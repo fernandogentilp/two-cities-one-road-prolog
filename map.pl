@@ -3,7 +3,7 @@
 % Propósito: geração de mapas
 % ==================================================
 
-:- module(map, [buildMap/3, randomize/0]).
+:- module(map, [buildMap/4, randomize/0]).
 
 :- use_module(types).
 :- use_module(library(random)).
@@ -109,4 +109,5 @@ buildMap(Rows, Cols, FinalMap, StartPos) :-
 
     map(FinalMap),
     StartPos = (Row1, 0).
+
 
