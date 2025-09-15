@@ -88,7 +88,7 @@ forceCityTile(Lat, Long, tile(city, (Lat, Long), 1, 1, false)).
 
 % constroi um mapa com base nas dimensoes recebidas, e verifica se e valido
 buildMap(Rows, Cols, FinalMap, StartPos) :-
-    randomMap(0, Rows, Cols, Map),
+    random_map(0, Rows, Cols, Map),
 
     MaxRowIndex is Rows - 1,
     random_between(0, MaxRowIndex, Row1),
@@ -109,5 +109,6 @@ buildMap(Rows, Cols, FinalMap, StartPos) :-
 
     map(FinalMap),
     StartPos = (Row1, 0).
+
 
 
