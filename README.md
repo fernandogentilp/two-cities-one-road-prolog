@@ -1,4 +1,5 @@
 Two Cities One Road 🎮
+
 Um jogo de estratégia em texto desenvolvido inteiramente em Prolog onde o objetivo é conectar duas cidades construindo um caminho com o menor custo possível, gerenciando recursos limitados.
 
 Sobre o Jogo
@@ -38,3 +39,4 @@ Use W, A, S, D para mover e construir nas direções (cima, esquerda, baixo, dir
 Digite stop. para sair do jogo
 
 Siga as instruções exibidas no terminal durante o jogo
+
