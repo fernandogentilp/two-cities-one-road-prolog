@@ -69,11 +69,6 @@ random_map(StartLat, Rows, Cols, [Row | Rest]) :-
     NextLat is StartLat + 1,
     random_map(NextLat, R1, Cols, Rest).
 
-% constroi um mapa com base nas dimensoes recebidas, e verifica se e valido
-buildMap(Rows, Cols, Map) :-
-    random_map(0, Rows, Cols, Map),
-    map(Map).
-
 % altera um painel (usado para adicionar as cidades)
 updateTileInRow([_ | Rest], 0, NewTile, [NewTile | Rest]) :- !.
 updateTileInRow([H | T], Index, NewTile, [H | NewRest]) :-
@@ -114,3 +109,4 @@ buildMap(Rows, Cols, FinalMap, StartPos) :-
 
     map(FinalMap),
     StartPos = (Row1, 0).
+
